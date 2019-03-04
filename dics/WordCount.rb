@@ -6,26 +6,26 @@ loop do
   print "\n 请按回车键开始写作."
   STDIN.gets
   @timest = Time.now
-  @quit = false
-  @th = Thread.new do
+  @quit = false # 是否结束写作
+  @th = Thread.new do # 新线程计时
     while sleep(1)
-      break if @quit
+      break if @quit # 写作结束则停止计时
       ts = (Time.now - @timest).round
-      print "\033]0;%s %02d : %02d\007" % [ts<1800 ? "Elapsed Time =" : "Time Limit Exceeded !",ts/60, ts%60]
-      if (1800-ts).abs < 2
-        `afplay /System/Library/Sounds/Purr.aiff -v 10 >/dev/null 2>&1 &`
-        print "\n\r\e[1;31mTime Limit Exceeded!\e[0m"
+      print "\033]0;%s %02d : %02d\007" % [ts<1800 ? "Elapsed Time =" : "Time Limit Exceeded !",ts/60, ts%60] # 重设终端标题
+      if (1800-ts).abs < 2 # 允许 ±1 s 误差
+        `afplay /System/Library/Sounds/Purr.aiff -v 10 >/dev/null 2>&1 &` # 提示铃
+        print "\n\r\e[1;31mTime Limit Exceeded!\e[0m" # 输出红色警告文字
       end
     end
   end
   @fn = @timest.strftime('AW-%Y-%m-%d-%H-%M-%S.txt')
-  Thread.new {system "vi #{@fn}"}.join
+  Thread.new {system "vi #{@fn}"}.join # 新建文本文档待输入
   
-  @quit = true
+  @quit = true # 结束写作
   if File.exist?(@fn)
     ts = (Time.now - @timest).round
     f = open(@fn)
-    buf = f.read
+    buf = f.read # 统计词数
     
     strs = buf.split
     strs.delete_if {|s| s.match(/[a-zA-Z]/).nil?} # 只匹配含英文字母的（不算数字）、由空格隔开的小片段
@@ -41,5 +41,5 @@ loop do
     print "\r\033[1A 文本文档未保存. 请按回车键继续."
   end
   STDIN.gets
-  print "\033c"
+  print "\033c" # 清屏
 end
